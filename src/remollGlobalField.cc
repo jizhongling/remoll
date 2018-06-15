@@ -35,13 +35,19 @@
 
 G4ThreadLocal remollGlobalField* remollGlobalField::fObject = 0;
 
-remollGlobalField* remollGlobalField::GetObject()
+remollGlobalField* remollGlobalField::GetObject(remollDetectorConstruction* det)
 {
-  if (!fObject) new remollGlobalField();
+  if (!fObject) new remollGlobalField(det);
   return fObject;
 }
 
-remollGlobalField::remollGlobalField()
+remollGlobalField* remollGlobalField::GetObject()
+{
+  if (fObject) return fObject;
+  return 0;
+}
+
+remollGlobalField::remollGlobalField(remollDetectorConstruction* det)
 // NOTE: when changing defaults below, also change guidance in messenger commands
 : fEquationType(0),fStepperType(4),
   fMinStep(0.01*mm),fDeltaChord(3.0*mm),
@@ -49,10 +55,13 @@ remollGlobalField::remollGlobalField()
   fEpsMin(1.0e-5*mm),fEpsMax(1.0e-4*mm),
   fEquation(0),fEquationDoF(0),
   fFieldManager(0),fFieldPropagator(0),
-  fStepper(0),fChordFinder(0)
+  fStepper(0),fChordFinder(0),
+  fDetectorConstruction(det)
 {
     // Set static pointer
     fObject = this;
+
+    G4cout << "Created remollGlobalField " << this << G4endl;
 
     // Get field propagator and managers
     G4TransportationManager* transportationmanager = G4TransportationManager::GetTransportationManager();
@@ -262,22 +271,19 @@ remollMagneticField* remollGlobalField::GetFieldByName(const G4String& name)
 
 void remollGlobalField::GetFieldValue( const G4double p[], G4double *resB) const
 {
-    G4double Bsum [__GLOBAL_NDIM], thisB[__GLOBAL_NDIM];
+    // (can't use fNfp or fFp, as they may change)
+    if (fFirst) ((remollGlobalField*)this)->SetupArray();   // (cast away const)
 
     for (int i = 0; i < __GLOBAL_NDIM; i++) {
-        Bsum[i] = 0.0;
+        resB[i] = 0.0;
     }
 
     std::vector<remollMagneticField*>::const_iterator it = fFields.begin();
     for (it = fFields.begin(); it != fFields.end(); it++) {
-        (*it)->GetFieldValue(p, thisB);
+        (*it)->AddFieldValue(p, thisB);
         for (int i = 0; i < __GLOBAL_NDIM; i++) {
-          Bsum[i] += thisB[i];
+          resB[i] += thisB[i];
         }
-    }
-
-    for (int i = 0; i < __GLOBAL_NDIM; i++) {
-        resB[i] = Bsum[i];
     }
 }
 
