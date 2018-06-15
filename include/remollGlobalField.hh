@@ -18,15 +18,25 @@ class G4FieldManager;
 class G4PropagatorInField;
 
 class remollMagneticField;
+class remollDetectorConstruction;
 
 class remollGlobalField : public G4MagneticField {
-    public:
-        remollGlobalField();
-	virtual ~remollGlobalField();
+    private:
+        static G4ThreadLocal remollGlobalField* fObject;
 
+    public:
         /// GetObject() returns the single remollGlobalField object.
         /// It is constructed, if necessary.
+        static remollGlobalField* GetObject(remollDetectorConstruction* const);
         static remollGlobalField* GetObject();
+
+    private:
+        remollGlobalField(remollDetectorConstruction* const);
+        remollGlobalField(const remollGlobalField&);
+        remollGlobalField& operator=(const remollGlobalField&);
+
+    public:
+	virtual ~remollGlobalField();
 
 	void AddNewField(G4String& name);
 	void SetFieldScaleByString(G4String& name_scale);
@@ -99,13 +109,16 @@ class remollGlobalField : public G4MagneticField {
     private:
 	std::vector<remollMagneticField*> fFields;
 
+        G4int fNfp;
+        G4bool fFirst;
+        const remollMagneticField **fFieldp;
+
 	remollMagneticField* GetFieldByName(const G4String& name);
 
 	G4GenericMessenger* fMessenger;
 	G4GenericMessenger* fGlobalFieldMessenger;
 
-    private:
-        static G4ThreadLocal remollGlobalField* fObject;
+        remollDetectorConstruction* fDetectorConstruction;
 };
 
 
