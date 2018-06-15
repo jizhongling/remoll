@@ -30,11 +30,10 @@
 #define __DET_STRLEN 200
 #define __MAX_DETS 10000
 
+#include "G4AutoDelete.hh"
 #include "G4Threading.hh"
 #include "G4AutoLock.hh"
 namespace { G4Mutex remollDetectorConstructionMutex = G4MUTEX_INITIALIZER; }
-
-G4ThreadLocal remollGlobalField* remollDetectorConstruction::fGlobalField = 0;
 
 remollDetectorConstruction::remollDetectorConstruction(const G4String& gdmlfile)
 : fGDMLFile("geometry/mollerMother.gdml"),fGDMLParser(0),
@@ -460,9 +459,12 @@ G4VPhysicalVolume* remollDetectorConstruction::Construct()
 
 void remollDetectorConstruction::LoadMagneticField()
 {
-  // Remove existing field and load new field
-  if (fGlobalField) delete fGlobalField;
-  fGlobalField = new remollGlobalField();
+  // Use G4Cache Get/Put methods
+  if (!fGlobalField.Get()) {
+    remollGlobalField* field = remollGlobalField::GetObject(this);
+    G4AutoDelete::Register(field); // register for deletion
+    fGlobalField.Put(field);
+  }
 }
 
 void remollDetectorConstruction::ConstructSDandField()

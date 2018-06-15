@@ -4,6 +4,7 @@
 #include "G4GDMLParser.hh"
 #include "G4VUserDetectorConstruction.hh"
 #include "G4Types.hh"
+#include "G4Cache.hh"
 
 #include <vector>
 
@@ -49,7 +50,7 @@ class remollDetectorConstruction : public G4VUserDetectorConstruction
     //----------------------
     //
 
-    static G4ThreadLocal remollGlobalField* fGlobalField;
+    G4Cache<remollGlobalField*> fGlobalField;
 
     G4VPhysicalVolume*      fWorldVolume;
 
