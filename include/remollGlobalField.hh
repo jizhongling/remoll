@@ -6,6 +6,7 @@
    \brief Global field interface
 */
 
+#include "G4Cache.hh"
 #include "G4MagneticField.hh"
 
 #include <vector>
@@ -23,6 +24,7 @@ class remollDetectorConstruction;
 class remollGlobalField : public G4MagneticField {
     private:
         static G4ThreadLocal remollGlobalField* fObject;
+        static G4Cache<remollGlobalField*> fMaster;
 
     public:
         /// GetObject() returns the single remollGlobalField object.
@@ -111,7 +113,9 @@ class remollGlobalField : public G4MagneticField {
 
         G4int fNfp;
         G4bool fFirst;
-        const remollMagneticField **fFieldp;
+        const remollMagneticField **fFp;
+        void SetupArray();
+        void Clear();
 
 	remollMagneticField* GetFieldByName(const G4String& name);
 

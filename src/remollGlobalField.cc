@@ -34,6 +34,7 @@
 #define __GLOBAL_NDIM 3
 
 G4ThreadLocal remollGlobalField* remollGlobalField::fObject = 0;
+G4Cache<remollGlobalField*> remollGlobalField::fMaster = G4Cache<remollGlobalField*>(0);
 
 remollGlobalField* remollGlobalField::GetObject(remollDetectorConstruction* det)
 {
@@ -58,10 +59,17 @@ remollGlobalField::remollGlobalField(remollDetectorConstruction* det)
   fStepper(0),fChordFinder(0),
   fDetectorConstruction(det)
 {
+    G4cout << "Creating remollGlobalField " << this << G4endl;
+
     // Set static pointer
     fObject = this;
 
-    G4cout << "Created remollGlobalField " << this << G4endl;
+    // If no master yet, we claim it
+    if (!fMaster.Get()) {
+     G4cout << "Setting remollGlobalField " << this << " as master." << G4endl;
+     fMaster.Put(this);
+    }
+
 
     // Get field propagator and managers
     G4TransportationManager* transportationmanager = G4TransportationManager::GetTransportationManager();
@@ -98,6 +106,8 @@ remollGlobalField::remollGlobalField(remollDetectorConstruction* det)
 
 remollGlobalField::~remollGlobalField()
 {
+  Clear();
+
   delete fMessenger;
   delete fGlobalFieldMessenger;
 
@@ -208,17 +218,16 @@ void remollGlobalField::SetChordFinder()
 
 void remollGlobalField::AddNewField(G4String& name)
 {
+    // Only first global field processes new fields
+    if (this != fMaster.Get()) return;
+
     remollMagneticField *thisfield = new remollMagneticField(name);
 
     if (thisfield->IsInit()) {
         fFields.push_back(thisfield);
 
-        // I don't know why it's necessary to do the following - SPR 1/24/13
-        // Recreating the chord finder makes stepping bearable
-        // in cases where you change the geometry.
-        G4TransportationManager::GetTransportationManager()->GetFieldManager()->CreateChordFinder(this);
-
         G4cout << __FUNCTION__ << ": field " << name << " was added." << G4endl;
+        G4cout << __FUNCTION__ << ": there are now " << fFields.size() << " fields in " << this << G4endl;
 
         // Add file data to output data stream
 
@@ -269,6 +278,27 @@ remollMagneticField* remollGlobalField::GetFieldByName(const G4String& name)
     }
 }
 
+void remollGlobalField::Clear()
+{
+  for (std::vector<remollMagneticField*>::iterator
+       i  = fFields.begin(); i != fFields.end(); i++)
+    delete *i;
+  fFields.clear();
+
+  if (fFp) { delete [] fFp; }
+  fFirst = true;
+  fNfp = 0;
+  fFp = 0;
+}
+
+void remollGlobalField::SetupArray()
+{
+  fFirst = false;
+  fNfp = fFields.size();
+  fFp = new const remollMagneticField* [fNfp+1]; // add 1 so it's never 0
+  for (int i = 0; i < fNfp; i++) fFp[i] = fFields[i];
+}
+
 void remollGlobalField::GetFieldValue( const G4double p[], G4double *resB) const
 {
     // (can't use fNfp or fFp, as they may change)
@@ -280,7 +310,8 @@ void remollGlobalField::GetFieldValue( const G4double p[], G4double *resB) const
 
     std::vector<remollMagneticField*>::const_iterator it = fFields.begin();
     for (it = fFields.begin(); it != fFields.end(); it++) {
-        (*it)->AddFieldValue(p, thisB);
+        G4double thisB[__GLOBAL_NDIM];
+        (*it)->GetFieldValue(p, thisB);
         for (int i = 0; i < __GLOBAL_NDIM; i++) {
           resB[i] += thisB[i];
         }
