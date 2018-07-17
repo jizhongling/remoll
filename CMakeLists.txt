@@ -135,9 +135,11 @@ target_link_libraries(reroot-bin remoll-lib)
 # relies on these scripts being in the current working directory.
 #
 
-install(DIRECTORY geometry DESTINATION share/remoll)
-install(DIRECTORY macros DESTINATION share/remoll)
-install(DIRECTORY vis DESTINATION share/remoll)
+if(NOT ${CMAKE_INSTALL_PREFIX} STREQUAL ${CMAKE_SOURCE_DIR})
+    install(DIRECTORY geometry DESTINATION share)
+    install(DIRECTORY macros DESTINATION share)
+    install(DIRECTORY vis DESTINATION share)
+endif()
 
 set(REMOLL_SCRIPTS
     vis/OIX.mac
