@@ -21,6 +21,7 @@ typedef G4RunManager RunManager;
 #include "remollRunData.hh"
 
 #include "remollIO.hh"
+#include "remollSearchPath.hh"
 #include "remollPhysicsList.hh"
 #include "remollActionInitialization.hh"
 #include "remollDetectorConstruction.hh"
@@ -29,12 +30,10 @@ typedef G4RunManager RunManager;
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
 
-#ifdef __APPLE__
-#include <unistd.h>
-#endif
-
 #include <ctime>
 #include <fstream>
+#include <sys/param.h>
+#include <unistd.h>
 
 namespace {
   void PrintUsage() {
@@ -53,11 +52,13 @@ int main(int argc, char** argv) {
     // Running time measurement: start
     clock_t tStart = clock();
 
+
     #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
     // Fix for #40: avoids LLVM/GL errors, but only for ROOT 6:
     // make sure gROOT is loaded before LLVM by using it first
     gROOT->Reset();
     #endif
+
 
     // Initialize the random seed
     G4long seed = time(0) + (int) getpid();
@@ -98,7 +99,6 @@ int main(int argc, char** argv) {
     //-------------------------------
     // Initialization of Run manager
     //-------------------------------
-    G4cout << "RunManager construction starting...." << G4endl;
     RunManager* runManager = new RunManager;
     #ifdef G4MULTITHREADED
     if (threads > 0) runManager->SetNumberOfThreads(threads);
@@ -145,8 +145,9 @@ int main(int argc, char** argv) {
     } else {
       // Define UI session for interactive mode
       G4UIExecutive* ui = new G4UIExecutive(argc,argv,session);
+      remollSearchPath* searchpath = remollSearchPath::GetInstance();
       if (ui->IsGUI())
-        UImanager->ApplyCommand("/control/execute macros/gui.mac");
+        UImanager->ExecuteMacroFile(searchpath->Find("/macros/gui.mac"));
       ui->SessionStart();
       delete ui;
     }
