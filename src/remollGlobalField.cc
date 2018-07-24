@@ -285,7 +285,7 @@ void remollGlobalField::Clear()
     delete *i;
   fFields.clear();
 
-  if (fFp) { delete [] fFp; }
+  if (fFp) { delete [] fFp; fFp = 0; }
   fFirst = true;
   fNfp = 0;
   fFp = 0;
