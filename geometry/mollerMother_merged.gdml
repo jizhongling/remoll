@@ -32,7 +32,7 @@
 
     <!-- Hall -->
     <physvol>
-      <file name="hall/hallDaughter_dump.gdml"/>
+      <file name="hall/hallDaughter_merged.gdml"/>
       <positionref ref="hallCenter"/>
     </physvol>
 
@@ -97,10 +97,10 @@
     
 
     <!-- Pion Detectors -->
-    <physvol>
+<!--    <physvol>
       <file name="pion/pionDetectorSystem.gdml"/>
       <positionref ref="pionDetectorCenter"/>
-    </physvol>
+    </physvol>-->
    
   </volume>
 </structure>

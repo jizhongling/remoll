@@ -46,6 +46,11 @@
     startphi="0" deltaphi="360" aunit="deg"
     rmin="1450" rmax="1460" z="2700" lunit="mm"/>
 
+  <tube
+    name="upstream_col12_solid"
+    startphi="0" deltaphi="360" aunit="deg"
+    rmin="30" rmax="110" z="1" lunit="mm"/>
+
 </solids>
 
 <structure>
@@ -126,6 +131,20 @@
     <auxiliary auxtype="DetNo" auxvalue="46"/>
   </volume>
 
+  <volume name="col12_VirtualPlane1_log">
+    <materialref ref="G4_Galactic"/>
+    <solidref ref="upstream_col12_solid"/>
+    <auxiliary auxtype="SensDet" auxvalue="planeDet"/>
+    <auxiliary auxtype="DetNo" auxvalue="47"/>
+  </volume>
+
+  <volume name="col12_VirtualPlane2_log">
+    <materialref ref="G4_Galactic"/>
+    <solidref ref="upstream_col12_solid"/>
+    <auxiliary auxtype="SensDet" auxvalue="planeDet"/>
+    <auxiliary auxtype="DetNo" auxvalue="48"/>
+  </volume>
+
   <volume name="ParallelWorld_logical">
     <materialref ref="G4_Galactic"/>
     <solidref ref="parallel_solid"/>
@@ -199,6 +218,16 @@
     <physvol name="n2atmoVirtualPlane_phys">
       <volumeref ref="n2atmoVirtualPlane_log"/>
       <positionref ref="n2atmoVirtualPlane_pos"/>
+    </physvol>
+
+    <physvol name="col12VirtualPlane1_phys">
+      <volumeref ref="col12_VirtualPlane1_log"/>
+      <positionref ref="col12_VirtualPlane1_pos"/>
+    </physvol>
+
+    <physvol name="col12VirtualPlane2_phys">
+      <volumeref ref="col12_VirtualPlane2_log"/>
+      <positionref ref="col12_VirtualPlane2_pos"/>
     </physvol>
 
     <auxiliary auxtype="Alpha" auxvalue="0.1"/>

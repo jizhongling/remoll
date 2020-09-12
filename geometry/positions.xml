@@ -56,6 +56,8 @@ detectors are placed -->
 <position name="donutUSVirtualPlane_pos" z="29330.00" unit="mm"/>
 <position name="donutDSVirtualPlane_pos" z="29360.00" unit="mm"/>
 <position name="n2atmoVirtualPlane_pos" z="31525.00" unit="mm"/>
+<position name="col12_VirtualPlane1_pos" z="5200.00" unit="mm"/>
+<position name="col12_VirtualPlane2_pos" z="5410.00" unit="mm"/>
 
 
 
