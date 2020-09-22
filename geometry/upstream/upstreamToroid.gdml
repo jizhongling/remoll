@@ -111,13 +111,7 @@
 
 	<cone name="solid_US_toroidMother" rmin1="30.142"  rmax1="245.899" rmin2="30.4304375" rmax2="245.899" z="2048.862" startphi="0" deltaphi="360" aunit="deg" lunit="mm"/>
 
-<box name="solid_shield1" lunit="mm" x="65.932" y="10" z="1792.73"/>
-        <box name="solid_shield2" lunit="mm" x="66.9" y="10" z="1793.73"/>
-        <subtraction name="solid_shield">
-                <first ref="solid_shield1"/>
-                <second ref="solid_shield2"/>
-                <position name="pos_shield_sub" unit="mm" x="0" y="-2" z="0"/>
-        </subtraction>
+        <box name="solid_shield1" lunit="mm" x="65.932" y="2" z="1792.73"/>
 
 </solids>
 
@@ -356,7 +350,7 @@
 
        <volume name="logic_shield_up">
                 <materialref ref="G4_CW95"/>
-                <solidref ref="solid_shield"/>
+                <solidref ref="solid_shield1"/>
                 <auxiliary auxtype="Color" auxvalue="red"/>
                 <auxiliary auxtype="SensDet" auxvalue="coilDet"/>
                 <auxiliary auxtype="DetNo" auxvalue="3333"/>
@@ -364,7 +358,7 @@
 
         <volume name="logic_shield_low">
                 <materialref ref="G4_CW95"/>
-                <solidref ref="solid_shield"/>
+                <solidref ref="solid_shield1"/>
                 <auxiliary auxtype="Color" auxvalue="red"/>
                 <auxiliary auxtype="SensDet" auxvalue="coilDet"/>
                 <auxiliary auxtype="DetNo" auxvalue="3334"/>
@@ -420,13 +414,13 @@
 
               <physvol name="phy_shield_up">
                         <volumeref ref="logic_shield_up"/>
-                        <position name="pos_shield_up" unit="mm" x="65.432" y="2.5" z="0"/>
+                        <position name="pos_shield_up" unit="mm" x="65.432" y="6.51" z="0"/>
                         <rotation name="rot_shield_up" x="0" y="-0.002574280458" z="0"/>
                 </physvol>
 
                 <physvol name="phy_shield_low">
                         <volumeref ref="logic_shield_low"/>
-                        <position name="pos_shield_low" unit="mm" x="65.432" y="-10.5" z="0"/>
+                        <position name="pos_shield_low" unit="mm" x="65.432" y="-6.51" z="0"/>
                         <rotation name="rot_shield_low" x="0" y="-0.002574280458" z="0"/>
                 </physvol>
 
