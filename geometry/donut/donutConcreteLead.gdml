@@ -30,6 +30,10 @@
 
    <!-- Lead donut positions -->
    <position name="donutLeadPosition" z="donutConcreteThickness"/>
+
+   <!-- Lead donut paddle -->
+   <quantity name="donutLeadPaddleThickness" type="length" value="2.0" unit="cm"/>
+   <variable name="iPaddle" value="1"/>
 </define>
 
 <materials>
@@ -97,7 +101,16 @@
               z="donutLeadThickness-donutVirtualDetectorThickness"/>
       <zplane rmin="donutLeadInnerRadiusDS" rmax="donutLeadOuterRadiusDS" z="donutLeadThickness"/>
     </polycone>
-</solids>
+
+    <xtru name="donutLeadPaddle_solid">
+￼      <twoDimVertex x="donutSystemInnerRadius" y="0"/>
+￼      <twoDimVertex x="donutSystemInnerRadius" y="donutSystemLength"/>
+￼      <twoDimVertex x="donutLeadInnerRadiusDS-donutLeadPaddleThickness*donutLeadPaddleThickness/4/donutLeadInnerRadiusDS" y="donutSystemLength"/>
+￼      <twoDimVertex x="donutConcreteInnerRadiusUS-donutLeadPaddleThickness*donutLeadPaddleThickness/4/donutConcreteInnerRadiusUS" y="0"/>
+￼      <section zOrder="1" zPosition="-donutLeadPaddleThickness/2" xOffset="0" yOffset="0" scalingFactor="1"/>
+￼      <section zOrder="2" zPosition="+donutLeadPaddleThickness/2" xOffset="0" yOffset="0" scalingFactor="1"/>
+￼    </xtru>
+￼</solids>
 
 <structure>
 
@@ -163,6 +176,11 @@
       </physvol>
     </volume>
 
+    <volume name="donutLeadPaddle_logical">
+      <materialref ref="G4_Pb"/>
+      <solidref ref="donutLeadPaddle_solid"/>
+    </volume>
+
     <volume name="donutSystem_logical">
       <materialref ref="G4_AIR"/>
       <solidref ref="donutSystem_solid"/>
@@ -176,6 +194,13 @@
         <volumeref ref="donutLead_logical"/>
         <positionref ref="donutLeadPosition"/>
       </physvol>
+
+      <loop for="iPaddle" from="1" to="14" step="1">
+        <physvol>
+          <volumeref ref="donutLeadPaddle_logical"/>
+          <rotation y="iPaddle*360/14" x="-90" unit="deg"/>
+        </physvol>
+      </loop>
 
       <auxiliary auxtype="Alpha" auxvalue="0.1"/>
    </volume>
