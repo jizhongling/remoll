@@ -34,7 +34,7 @@
   <quantity name="pionDetectorLuciteOutsideWidth" type="length" value="45.0" unit="cm"/>
 
   <quantity name="pionDetectorLuciteHeight" type="length" value="7" unit="cm"/>
-  <quantity name="pionDetectorLuciteTheta" type="angle" value="0.0" unit="deg"/>
+  <quantity name="pionDetectorLuciteTheta" type="angle" value="-22.5" unit="deg"/>
 
   <constant name="pionDetectorLuciteWedgeSide" value="0.0"/> <!-- in [-1, +1] -->
   <constant name="pionDetectorLuciteWedgeBevelFraction" value="0.01"/> <!-- in ]0, 1[ -->

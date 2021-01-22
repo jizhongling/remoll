@@ -20,7 +20,7 @@
     you modify the angle below so as to avoid overlaps between this volume and
     the trigger scintillator and volumes.
   -->
-  <quantity name="pionDetectorLuciteLength" type="length" value="2.0*2.54" unit="cm"/>
+  <quantity name="pionDetectorLuciteLength" type="length" value="4.0*2.54" unit="cm"/>
 
   <!--
     The Cherenkov critical angle for n = 1.5 materials is cos(theta_c) = 1/n,
@@ -88,7 +88,7 @@
       <file name="pion/Lucite/pionDetectorLucite.gdml" volname="pionDetectorLuciteShieldDS_logical"/>
       <position name="pionDetectorLucite_position"
         x="pionDetectorLuciteInnerEdgeRadialPosition"
-        z="+0.65*2.54*cm"/>
+        z="+0.85*2.54*cm"/>
       <rotation name="pionDetectorLucite_rotation"
                 z="pionDetectorLuciteSectorAngleBase"
                 y="-(pionDetectorLuciteSectorAngleBase+pionDetectorLuciteSectorAnglePitch)"/>
@@ -98,7 +98,7 @@
       <file name="pion/Lucite/pionDetectorLucite.gdml" volname="pionDetectorLuciteShieldIN_logical"/>
       <position name="pionDetectorLucite_position"
         x="pionDetectorLuciteInnerEdgeRadialPosition-5.75*cm"
-        z="0"/>
+        z="-0.75*2.54*cm"/>
       <rotation name="pionDetectorLuciteShieldIN_rotation"
         y="-90*deg"/>
     </physvol>
