@@ -8,7 +8,7 @@
 <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
 
 <define>
-  <constant name="N_P" value="1tree"/>
+  <constant name="N_P" value="1"/>
   <variable name="i_p" value="1"/>
 
   <!--
