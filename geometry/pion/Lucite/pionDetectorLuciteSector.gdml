@@ -3,7 +3,7 @@
 <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
 
 <define>
-  <constant name="N_P" value="1"/>
+  <constant name="N_P" value="14"/>
   <constant name="PHI" value="360.0/N_P"/>
 
   <!--
