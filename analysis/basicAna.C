@@ -225,7 +225,7 @@ long processOne(string fnm){
       if( find(procID.begin(),procID.end(), hit->at(j).trid) != procID.end() ) continue;
       procID.push_back(hit->at(j).trid);
 
-      if(isnan(rate) || isinf(rate)) continue;
+      if(std::isnan(rate) || std::isinf(rate)) continue;
       
       if(hit->at(j).r < 500) continue;
 

@@ -1,15 +1,13 @@
 // this does 3W region analysis for epInelastic
 // [process][ring][sector]
 const int nMatrix=6;
-const int nProcDef=10;
-const int nProc=9;
+const int nProcDef=8;
+const int nProc=7;
 double A[nProcDef][6][3],rate[nProc][6][3];
 string procNm[nProcDef]={
   "moller",
   "epElastic",
-  "epInelasticW1",
-  "epInelasticW2",
-  "epInelasticW3",
+  "epInelastic",
   "eAlElastic",
   "eAlQuasielastic",
   "eAlInelastic",
@@ -38,26 +36,14 @@ void deconvolution(){
 
   /// optimal positioning
   string fnms[nProcDef]={
-		      // "../ee_Segmented_shldAnaV6.root",
-		      // "../epElastic_Segmented_shldAnaV6.root",
-		      // "../epInelastic_Segmented_shldAnaV7.root",
-		      // "../epInelastic_Segmented_shldAnaV7.root",
-		      // "../epInelastic_Segmented_shldAnaV7.root",
-		      // "../ee_SegmentedV1_shldAnaV7.root",
-		      // "../epElastic_SegmentedV1_shldAnaV7.root",
-		      // "../epInelastic_SegmentedV1_shldAnaV7.root",
-		      // "../epInelastic_SegmentedV1_shldAnaV7.root",
-		      // "../epInelastic_SegmentedV1_shldAnaV7.root",
-		      "../ee_UpdatedHybrid_shldAnaV6.root",
-		      "../epElastic_UpdatedHybrid_shldAnaV6.root",
-		      "../epInelastic_UpdatedHybrid_shldAnaV7.root",
-		      "../epInelastic_UpdatedHybrid_shldAnaV7.root",
-		      "../epInelastic_UpdatedHybrid_shldAnaV7.root",
-		      "o_eAl-elastic_8395000_bkgAna.root",
-		      "o_eAl-quasielastic_2e7_bkgAna.root",
-		      "o_eAl-inelastic_18635000_bkgAna.root",
-		      "o_piMinus_259e4_bkgAna.root",
-		      "byHand"
+    "histos/deconv_ee_offSet0_basicAnaV0.root",
+    "histos/deconv_epE_offSet0_basicAnaV0.root",
+    "histos/deconv_epI_offSet0_basicAnaV0.root",
+    "histos/deconv_eAlE_offSet0_basicAnaV0.root",
+    "histos/deconv_eAlQ_offSet0_basicAnaV0.root",
+    "histos/deconv_eAlI_offSet0_basicAnaV0.root",
+    "histos/deconv_pi_offSet0_basicAnaV0.root",
+    "byHand"
   };
 
   for(int i=0;i<nProc;i++)
@@ -105,11 +91,15 @@ void analyzeOne(int ring, int sect){
 	    cout<<"\ti/j/k/rate\t"<<i<<"\t"<<j<<"\t"<<k<<"\t"<<rate[k][i][j]<<"\t"
 		<<A[k][ring]<<" "<<f[k]<<endl;
 	}else{
-	  f[k] = rate[k][i][j]/rateTot * A[k][i][j]/A[k][ring][sect];
+          // TODO: which one is correct?
+	  //f[k] = rate[k][i][j]/rateTot * A[k][i][j]/A[k][ring][sect];
+	  f[k] = rate[k][i][j]/rateTot;
 	  if(verbose)
 	    cout<<"\ti/j/k/rate**\t"<<i<<"\t"<<j<<"\t"<<k<<"\t"<<rate[k][i][j]<<"\t"<<f[k]<<endl;
 	}
-        Ami += f[k]*A[k][ring][sect];
+        // TODO: which one is correct?
+        //Ami += f[k]*A[k][ring][sect];
+        Ami += f[k]*A[k][i][j];
 	if(verbose)
 	  cout<<"\t i/j/f/f*A/Ami\t"<<i<<"\t"<<j<<"\t"<<f[k]<<"\t"<<f[k]*A[k][ring][sect]
 	      <<"\t"<<Ami<<endl;
@@ -130,7 +120,7 @@ void analyzeOne(int ring, int sect){
     cout<<"\n\t";
   }
   F.Invert();
-  cout<<"\nBefore Inverstion\n\tDet: "<<F.Determinant()<<endl;
+  cout<<"\nAfter Inverstion\n\tDet: "<<F.Determinant()<<endl;
   cout<<"\tF matrix\n\t";
   for(int i=0;i<nMatrix;i++){
     for(int j=0;j<nMatrix;j++)
@@ -169,7 +159,7 @@ void analyzeOne(int ring, int sect){
   cout<<"stat moller\t"<< stat << "\t" << stat/33<<endl;
 
   double syst[nProcDef];
-  double uncert[nProcDef]={0,0,0,0,1,1,0.1,1};
+  double uncert[nProcDef]={};
   for(int i=1;i<nProc;i++){
     if(i<nMatrix)
       syst[i] = rate[i][ring][sect]/rate[0][ring][sect] * sigma[i];
@@ -206,56 +196,27 @@ void printAll(){
 
 void readSim(string fnm,int proc, int addBkgnd){
 
-  if(proc>=9){
-  for(int i=0;i<6;i++)
-    for(int j=0;j<3;j++)
-      if(proc==7){
-	rate[proc][i][j] = neutralBkgndRate[i]/3*neutralBkgndFactor;
-	A[proc][i][j] = 0;
-      }else{
-	rate[proc][i][j] = 0;
-	A[proc][i][j] = 0;
-      }
-    return;
-  }
-  
   if(verbose) cout<<"reading "<<fnm<<"\t"<<proc<<endl;
   TFile *fin=TFile::Open(fnm.c_str(),"READ");
   string hName="hRate";
-  if(proc<2)
-    hName = "det28/hRate_eP1";
-  else if(proc>=2 && proc<5)
-    hName = Form("deconvolution/hRateW%d_eP1",proc-1);
 
   TH1D *hRate=(TH1D*)fin->Get(hName.c_str());
 
   const double rateFactor = 65./85;
   double gfFactor = 1;
-  if(proc >=5 && proc <= 6)
-    gfFactor = 1e6;
-  if(proc<5)
-    gfFactor *= -1;
-  //double minRate(1e9);
+
   for(int i=0;i<6;i++)
     for(int j=0;j<3;j++){
       hName=Form("hAsym_R%d_S%d",i+1,j);
-      if(proc<2)
-	hName=Form("deconvolution/hAsym_eP1_R%d_S%d",i+1,j);
-      else if(proc>=2 && proc <5) 
-	hName=Form("deconvolution/hAsym_W%d_eP1_R%d_S%d",proc-1,i+1,j);
 
       if(verbose)
 	cout<<"\tR/S\t"<<i<<"\t"<<j<<"\t"<<hName<<endl;
 
       TH1D *hA=(TH1D*)fin->Get(hName.c_str());
-      if(proc==8)
-	A[proc][i][j] = -1660;
-      else
-	A[proc][i][j] = hA->GetMean()*gfFactor;
+      A[proc][i][j] = hA->GetMean()*gfFactor;
       
       rate[proc][i][j] = hRate->GetBinContent(i*3+j+1) * rateFactor;
-      // if(rate[proc][i][j]<min && rate[proc][i][j]>0)
-      // 	minRate=rate[proc][i][j];
+
       if(verbose)
 	cout<<"\tR/S\t"<<i<<"\t"<<j<<"\t"<<A[proc][i][j]<<"\t"<<rate[proc][i][j]<<endl;
     }
