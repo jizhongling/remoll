@@ -15,7 +15,7 @@ string procNm[nProcDef]={
   "neutralBknd"
 };
 
-int verbose = 0;
+int verbose = 1;
 
 const double neutralBkgndFactor = 1.;
 const double neutralBkgndRate[6]={1e9,1e9,1e9,1e9,1e9,1e9};
@@ -91,15 +91,11 @@ void analyzeOne(int ring, int sect){
 	    cout<<"\ti/j/k/rate\t"<<i<<"\t"<<j<<"\t"<<k<<"\t"<<rate[k][i][j]<<"\t"
 		<<A[k][ring]<<" "<<f[k]<<endl;
 	}else{
-          // TODO: which one is correct?
-	  //f[k] = rate[k][i][j]/rateTot * A[k][i][j]/A[k][ring][sect];
-	  f[k] = rate[k][i][j]/rateTot;
+	  f[k] = rate[k][i][j]/rateTot * A[k][i][j]/A[k][ring][sect];
 	  if(verbose)
 	    cout<<"\ti/j/k/rate**\t"<<i<<"\t"<<j<<"\t"<<k<<"\t"<<rate[k][i][j]<<"\t"<<f[k]<<endl;
 	}
-        // TODO: which one is correct?
-        //Ami += f[k]*A[k][ring][sect];
-        Ami += f[k]*A[k][i][j];
+        Ami += f[k]*A[k][ring][sect];
 	if(verbose)
 	  cout<<"\t i/j/f/f*A/Ami\t"<<i<<"\t"<<j<<"\t"<<f[k]<<"\t"<<f[k]*A[k][ring][sect]
 	      <<"\t"<<Ami<<endl;
