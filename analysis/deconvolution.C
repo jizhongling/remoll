@@ -1,13 +1,14 @@
 // this does 3W region analysis for epInelastic
 // [process][ring][sector]
-const int nMatrix=6;
-const int nProcDef=8;
-const int nProc=8;
-double A[nProcDef][6][3],rate[nProc][6][3];
-string procNm[nProcDef]={
+const int nMatrix=9;
+const int nProc=10;
+double A[nProc][6][3],rate[nProc][6][3];
+string procNm[nProc]={
   "moller",
   "epElastic",
-  "epInelastic",
+  "epInelasticW1",
+  "epInelasticW2",
+  "epInelasticW3",
   "eAlElastic",
   "eAlQuasielastic",
   "eAlInelastic",
@@ -17,12 +18,12 @@ string procNm[nProcDef]={
 
 int verbose = 0;
 
-const double neutralBkgndFactor = 1;
+const double neutralBkgndFactor = 1.;
 const double neutralBkgndRate[6]={1e9,1e9,1e9,1e9,1e9,1e9};
 //const double neutralBkgndRate[6]={5e7,8e7,11e7,7e7,33e7,3e7};
 
 void analyzeOne(int ring, int sect);
-void readSim(string fnm,int proc, int Wbin);
+void readSim(string fnm,int proc, int addBkgnd);
 void printAll();
 
 void deconvolution(){
@@ -35,10 +36,12 @@ void deconvolution(){
       }
 
   /// optimal positioning
-  string fnms[nProcDef]={
+  string fnms[nProc]={
     "histos/deconv_ee_offSet0_basicAnaV0.root",
     "histos/deconv_epE_offSet0_basicAnaV0.root",
-    "histos/deconv_epI_offSet0_basicAnaV0.root",
+    "histos/inelasticout_bkgAnaV4.root",
+    "histos/inelasticout_bkgAnaV4.root",
+    "histos/inelasticout_bkgAnaV4.root",
     "histos/deconv_eAlE_offSet0_basicAnaV0.root",
     "histos/deconv_eAlQ_offSet0_basicAnaV0.root",
     "histos/deconv_eAlI_offSet0_basicAnaV0.root",
@@ -46,16 +49,8 @@ void deconvolution(){
     "byHand"
   };
 
-  int Wbin = 0;
-  for(int i=0;i+Wbin<nProc;i++)
-  {
-    readSim(fnms[i],i,Wbin);
-    if(procNm[i] == "XXXepInelastic")
-    {
-      readSim(fnms[i],i,++Wbin);
-      readSim(fnms[i],i,++Wbin);
-    }
-  }
+  for(int i=0;i<nProc;i++)
+    readSim(fnms[i],i,0);
 
   printAll();
   
@@ -148,7 +143,7 @@ void analyzeOne(int ring, int sect){
   }
 
   cout<<endl<<endl<<"\t\t\toverall\nName\tAsymmetry\tuncert[ppb]\trelative uncer[ppb]\n";
-  double sigma[nProcDef];
+  double sigma[nProc];
   for(int i=0;i<nMatrix;i++){
     sigma[i] = sqrt( F(i,i) ) / ( 0.8 * sqrt(beamDays * days2seconds) ) * 1e9;
     cout<<procNm[i]<<"\t"<<A[i][ring][sect]<<"\t"<<sigma[i]<<"\t"<<sigma[i]/A[i][ring][sect]<<endl;
@@ -162,8 +157,8 @@ void analyzeOne(int ring, int sect){
     ( sqrt(totRate) * polarization * sqrt(beamDays * days2seconds)) *1e9;
   cout<<"stat moller\t"<< stat << "\t" << stat/33<<endl;
 
-  double syst[nProcDef];
-  double uncert[nProcDef]={0,0,0,0,0.1,1,1,1};
+  double syst[nProc];
+  double uncert[nProc]={0,0,0,0,1,1,0.1,1};
   for(int i=1;i<nProc;i++){
     if(i<nMatrix)
       syst[i] = rate[i][ring][sect]/rate[0][ring][sect] * sigma[i];
@@ -201,7 +196,7 @@ void printAll(){
       }
       double sigmaAm = 1/sqrt(rateTot);
 
-      double Ami2(0),f2[nProcDef];
+      double Ami2(0);
       cout<<i+1<<","<<sector[j];
       for(int k=0;k<nProc;k++){
         Ami2 += rate[k][i][j]/rateTot * A[k][i][j];
@@ -213,7 +208,7 @@ void printAll(){
     }
 }
 
-void readSim(string fnm,int proc, int Wbin){
+void readSim(string fnm,int proc, int addBkgnd){
 
   if(procNm[proc] == "neutralBknd"){
     for(int i=0;i<6;i++)
@@ -225,33 +220,44 @@ void readSim(string fnm,int proc, int Wbin){
     return;
   }
 
-  if(verbose) cout<<"reading "<<fnm<<"\t"<<proc+Wbin<<endl;
+  size_t inel = procNm[proc].find("epInelasticW");
+  size_t Wbin = procNm[proc].size();
+
+  if(verbose) cout<<"reading "<<fnm<<"\t"<<proc<<endl;
   TFile *fin=TFile::Open(fnm.c_str(),"READ");
   string hName="hRate";
-  if(procNm[proc] == "XXXepInelastic")
-    hName = Form("hRate_W%d",Wbin+1);
+  if(inel != string::npos)
+    hName = Form("hRate_%s",procNm[proc].substr(Wbin-2,2).c_str());
 
   TH1D *hRate=(TH1D*)fin->Get(hName.c_str());
 
   const double rateFactor = 65./85;
   double gfFactor = 1;
+  if(procNm[proc] == "eAlElastic" || procNm[proc] == "eAlQuasielastic")
+    gfFactor = 1e6;
+  if(procNm[proc] == "moller" || procNm[proc].substr(0,2) == "ep")
+    gfFactor *= -1;
 
   for(int i=0;i<6;i++)
     for(int j=0;j<3;j++){
       hName=Form("hAsym_R%d_S%d",i+1,j);
-      if(procNm[proc] == "XXXepInelastic")
-        hName=Form("hAsym_W%d_R%d_S%d",Wbin+1,i+1,j);
+      if(inel != string::npos)
+        hName=Form("hAsym_%s_R%d_S%d",procNm[proc].substr(Wbin-2,2).c_str(),i+1,j);
 
       if(verbose)
 	cout<<"\tR/S\t"<<i<<"\t"<<j<<"\t"<<hName<<endl;
 
       TH1D *hA=(TH1D*)fin->Get(hName.c_str());
-      A[proc+Wbin][i][j] = hA->GetMean()*gfFactor;
+      if(procNm[proc] == "piminus")
+        A[proc][i][j] = -1660;
+      else
+        A[proc][i][j] = hA->GetMean()*gfFactor;
+
       
-      rate[proc+Wbin][i][j] = hRate->GetBinContent(i*3+j+1) * rateFactor;
+      rate[proc][i][j] = hRate->GetBinContent(i*3+j+1) * rateFactor;
 
       if(verbose)
-	cout<<"\tR/S\t"<<i<<"\t"<<j<<"\t"<<A[proc+Wbin][i][j]<<"\t"<<rate[proc+Wbin][i][j]<<endl;
+	cout<<"\tR/S\t"<<i<<"\t"<<j<<"\t"<<A[proc][i][j]<<"\t"<<rate[proc][i][j]<<endl;
     }
 
   fin->Close();
