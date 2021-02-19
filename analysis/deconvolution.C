@@ -15,14 +15,14 @@ string procNm[nProcDef]={
   "neutralBknd"
 };
 
-int verbose = 1;
+int verbose = 0;
 
 const double neutralBkgndFactor = 1.;
 const double neutralBkgndRate[6]={1e9,1e9,1e9,1e9,1e9,1e9};
 //const double neutralBkgndRate[6]={5e7,8e7,11e7,7e7,33e7,3e7};
 
 void analyzeOne(int ring, int sect);
-void readSim(string fnm,int proc, int addBkgnd);
+void readSim(string fnm,int proc, int Wbin);
 void printAll();
 
 void deconvolution(){
@@ -46,8 +46,16 @@ void deconvolution(){
     "byHand"
   };
 
-  for(int i=0;i<nProc;i++)
-    readSim(fnms[i],i,0);
+  int Wbin = 0;
+  for(int i=0;i+Wbin<nProc;i++)
+  {
+    readSim(fnms[i],i,Wbin);
+    if(procNm[i] == "XXXepInelastic")
+    {
+      readSim(fnms[i],i,++Wbin);
+      readSim(fnms[i],i,++Wbin);
+    }
+  }
 
   printAll();
   
@@ -171,30 +179,47 @@ void printAll(){
   const double polarization = 0.8;
   const double beamDays = 235 + 95 + 14;
   const double days2seconds = 24*60*60;
+  const char *sector[3] = {"C", "T", "O"};
+
+  cout<<",";
+  for(int k=0;k<nProc;k++)
+    cout<<","<<procNm[k]<<",,";
+  cout<<",,,"<<endl;
+
+  cout<<"R,S";
+  for(int k=0;k<nProc;k++)
+    cout<<",A [ppb],f [% of rate],f*A [% of Am]";
+  cout<<",Am [ppb],dAm [ppb],dAm/Am [%]"<<endl;
 
   for(int i=0;i<6;i++)
     for(int j=0;j<3;j++){
-      double rateTot(0);
+      double rateTot(0), fAsum(0);
       for(int k=0;k<nProc;k++)
+      {
         rateTot += rate[k][i][j];
+        fAsum += rate[k][i][j] * A[k][i][j];
+      }
       double sigmaAm = 1/sqrt(rateTot);
 
       double Ami2(0),f2[nProcDef];
-      cout<<i<<" "<<j;
+      cout<<i+1<<","<<sector[j];
       for(int k=0;k<nProc;k++){
         Ami2 += rate[k][i][j]/rateTot * A[k][i][j];
-	cout<<" "<<A[k][i][j]<<" "<<rate[k][i][j]/rateTot;
+	cout<<","<<A[k][i][j]<<","<<rate[k][i][j]/rateTot*100.<<","<<rate[k][i][j] * A[k][i][j] / fAsum * 100.;
       }
-      cout<<" "<<Ami2<<" "<<sigmaAm / ( 0.8 * sqrt(beamDays * days2seconds) ) * 1e9<< " " << rateTot <<endl;
+      double dAmi2 = sigmaAm / ( 0.8 * sqrt(beamDays * days2seconds) ) * 1e9;
+      cout<<","<<Ami2<<","<<dAmi2<< "," << dAmi2/fabs(Ami2)*100.<<endl;
 
     }
 }
 
-void readSim(string fnm,int proc, int addBkgnd){
+void readSim(string fnm,int proc, int Wbin){
 
-  if(verbose) cout<<"reading "<<fnm<<"\t"<<proc<<endl;
+  if(verbose) cout<<"reading "<<fnm<<"\t"<<proc+Wbin<<endl;
   TFile *fin=TFile::Open(fnm.c_str(),"READ");
   string hName="hRate";
+  if(procNm[proc] == "XXXepInelastic")
+    hName = Form("hRate_W%d",Wbin+1);
 
   TH1D *hRate=(TH1D*)fin->Get(hName.c_str());
 
@@ -204,17 +229,19 @@ void readSim(string fnm,int proc, int addBkgnd){
   for(int i=0;i<6;i++)
     for(int j=0;j<3;j++){
       hName=Form("hAsym_R%d_S%d",i+1,j);
+      if(procNm[proc] == "XXXepInelastic")
+        hName=Form("hAsym_W%d_R%d_S%d",Wbin+1,i+1,j);
 
       if(verbose)
 	cout<<"\tR/S\t"<<i<<"\t"<<j<<"\t"<<hName<<endl;
 
       TH1D *hA=(TH1D*)fin->Get(hName.c_str());
-      A[proc][i][j] = hA->GetMean()*gfFactor;
+      A[proc+Wbin][i][j] = hA->GetMean()*gfFactor;
       
-      rate[proc][i][j] = hRate->GetBinContent(i*3+j+1) * rateFactor;
+      rate[proc+Wbin][i][j] = hRate->GetBinContent(i*3+j+1) * rateFactor;
 
       if(verbose)
-	cout<<"\tR/S\t"<<i<<"\t"<<j<<"\t"<<A[proc][i][j]<<"\t"<<rate[proc][i][j]<<endl;
+	cout<<"\tR/S\t"<<i<<"\t"<<j<<"\t"<<A[proc+Wbin][i][j]<<"\t"<<rate[proc+Wbin][i][j]<<endl;
     }
 
   fin->Close();

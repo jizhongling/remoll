@@ -9,9 +9,9 @@
 
 
 TFile *fout;
-vector<vector<TH1D*>> hAsym;
+vector<vector<TH1D*>> hAsym[3];
 TH1D *hScatAngP1,*hScatAngP2;
-TH1D *hRate,*rRate, *rRateAsym,*r,*sourceZ,*eRateAsym;
+TH1D *hRate[3],*rRate, *rRateAsym,*r,*sourceZ,*eRateAsym;
 TH2D *hXY,*hXYrate, *hXYrateAsym;
 TH2D *hVtxAngR, *hAfterColl2AngR;
 TH2D *hVtxAngRrate, *hAfterColl2AngRrate;
@@ -78,20 +78,23 @@ void initHisto(){
 
   fout = new TFile(foutNm.c_str(),"RECREATE");
 
-  hRate = new TH1D("hRate","Sums for all rings and sectors",18,0,18);
-  const string secNm[3]={"closed","transition","open"};
-  for(int i=1;i<=18;i++)
-    hRate->GetXaxis()->SetBinLabel(i,Form("R%d %s",(i-1-(i-1)%3)/3+1,secNm[(i-1)%3].c_str()));
+  for(int iw=0; iw<3; iw++)
+  {
+    hRate[iw] = new TH1D(Form("hRate_W%d",iw+1),"Sums for all rings and sectors",18,0,18);
+    const string secNm[3]={"closed","transition","open"};
+    for(int i=1;i<=18;i++)
+      hRate[iw]->GetXaxis()->SetBinLabel(i,Form("R%d %s",(i-1-(i-1)%3)/3+1,secNm[(i-1)%3].c_str()));
 
-  for(int i=0;i<6;i++){
-    vector<TH1D*> dt;
-    for(int j=0;j<3;j++){
-      TH1D *h = new TH1D(Form("hAsym_R%d_S%d",i+1,j),
-			 Form("rate weighted Asyms for Ring %d Sector %s;asymmetry [ppb]",i+1,secNm[j].c_str()),
-			 100,-1000000,1000000);
-      dt.push_back(h);
-    }
-    hAsym.push_back(dt);
+    for(int i=0;i<6;i++){
+      vector<TH1D*> dt;
+      for(int j=0;j<3;j++){
+        TH1D *h = new TH1D(Form("hAsym_W%d_R%d_S%d",iw+1,i+1,j),
+            Form("rate weighted Asyms for Ring %d Sector %s;asymmetry [ppb]",i+1,secNm[j].c_str()),
+            100,-1000000,1000000);
+        dt.push_back(h);
+      }
+      hAsym[iw].push_back(dt);
+  }
   }
 
   fout->mkdir("QA","quality assurance plots");
@@ -180,6 +183,15 @@ long processOne(string fnm){
       rR->Reset();
     }
 
+    int Wbin;
+    double evW = sqrt(ev->W2) / 1e3;
+    if(evW < 1.4)
+      Wbin = 0;
+    else if(evW < 2.5)
+      Wbin = 1;
+    else
+      Wbin = 2;
+
     double asym = ev->A;
 
     double scatAng[2]={-1,-1};
@@ -266,9 +278,9 @@ long processOne(string fnm){
       int hitRing5=0;
       if(foundRing == 4) hitRing5=1;
 
-      hAsym[foundRing][sector]->Fill(asym,rate);
-      hRate->SetBinContent(foundRing*3+sector+1,
-			   rate + hRate->GetBinContent(foundRing*3+sector+1));
+      hAsym[Wbin][foundRing][sector]->Fill(asym,rate);
+      hRate[Wbin]->SetBinContent(foundRing*3+sector+1,
+			   rate + hRate[Wbin]->GetBinContent(foundRing*3+sector+1));
       
       if(hit->at(j).trid==1 && scatAng[0]!=-1){
 	hVtxAngR -> Fill(hit->at(j).r,scatAng[0]);
@@ -320,13 +332,16 @@ long processOne(string fnm){
 
 void writeOutput(){
   fout->cd();
-  for(int i=0;i<6;i++)
-    for(int j=0;j<3;j++){
-      hAsym[i][j]->Scale(1./nFiles);
-      hAsym[i][j]->Write();
-    }
-  hRate->Scale(1./nFiles);
-  hRate->Write();
+  for(int iw=0; iw<3; iw++)
+  {
+    for(int i=0;i<6;i++)
+      for(int j=0;j<3;j++){
+        hAsym[iw][i][j]->Scale(1./nFiles);
+        hAsym[iw][i][j]->Write();
+      }
+    hRate[iw]->Scale(1./nFiles);
+    hRate[iw]->Write();
+  }
 
   fout->cd("QA");
   r->Write();
