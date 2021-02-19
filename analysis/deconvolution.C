@@ -2,7 +2,7 @@
 // [process][ring][sector]
 const int nMatrix=6;
 const int nProcDef=8;
-const int nProc=7;
+const int nProc=8;
 double A[nProcDef][6][3],rate[nProc][6][3];
 string procNm[nProcDef]={
   "moller",
@@ -17,7 +17,7 @@ string procNm[nProcDef]={
 
 int verbose = 0;
 
-const double neutralBkgndFactor = 1.;
+const double neutralBkgndFactor = 1;
 const double neutralBkgndRate[6]={1e9,1e9,1e9,1e9,1e9,1e9};
 //const double neutralBkgndRate[6]={5e7,8e7,11e7,7e7,33e7,3e7};
 
@@ -163,7 +163,7 @@ void analyzeOne(int ring, int sect){
   cout<<"stat moller\t"<< stat << "\t" << stat/33<<endl;
 
   double syst[nProcDef];
-  double uncert[nProcDef]={};
+  double uncert[nProcDef]={0,0,0,0,0.1,1,1,1};
   for(int i=1;i<nProc;i++){
     if(i<nMatrix)
       syst[i] = rate[i][ring][sect]/rate[0][ring][sect] * sigma[i];
@@ -214,6 +214,16 @@ void printAll(){
 }
 
 void readSim(string fnm,int proc, int Wbin){
+
+  if(procNm[proc] == "neutralBknd"){
+    for(int i=0;i<6;i++)
+      for(int j=0;j<3;j++)
+      {
+        rate[proc][i][j] = neutralBkgndRate[i]/3*neutralBkgndFactor;
+        A[proc][i][j] = 0;
+      }
+    return;
+  }
 
   if(verbose) cout<<"reading "<<fnm<<"\t"<<proc+Wbin<<endl;
   TFile *fin=TFile::Open(fnm.c_str(),"READ");
