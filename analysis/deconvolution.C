@@ -233,10 +233,10 @@ void readSim(string fnm,int proc, int addBkgnd){
 
   const double rateFactor = 65./85;
   double gfFactor = 1;
-  if(procNm[proc] == "eAlElastic" || procNm[proc] == "eAlQuasielastic")
-    gfFactor = 1e6;
-  if(procNm[proc] == "moller" || procNm[proc].substr(0,2) == "ep")
-    gfFactor *= -1;
+  //if(procNm[proc] == "eAlElastic" || procNm[proc] == "eAlQuasielastic")
+  //  gfFactor = 1e6;
+  //if(procNm[proc] == "moller" || procNm[proc].substr(0,2) == "ep")
+  //  gfFactor *= -1;
 
   for(int i=0;i<6;i++)
     for(int j=0;j<3;j++){
