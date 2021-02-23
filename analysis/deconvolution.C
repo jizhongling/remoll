@@ -2,7 +2,7 @@
 // [process][ring][sector]
 const int nMatrix=2;
 const int nProcDef=10;
-const int nProc=3;
+const int nProc=2;
 double A[nProc][6][3],rate[nProc][6][3],sigma[nProc][6][3];
 string procNm[nProcDef]={
   "moller",
@@ -18,8 +18,7 @@ string procNm[nProcDef]={
 };
 string procNmComb[nProc]={
   "moller",
-  "Bknd",
-  "neutralBknd"
+  "Bknd"
 };
 
 int verbose = 0;
@@ -60,7 +59,7 @@ void deconvolution(){
   for(int i=0;i<nProc;i++){
     readSim(fnms[i+addProc],i,addProc);
     if(i==1)
-      while(addProc<7){
+      while(addProc<8){
         addProc++;
         readSim(fnms[i+addProc],i,addProc);
       }
@@ -225,8 +224,10 @@ void readSim(string fnm,int proc,int addProc){
   if(procNm[proc+addProc] == "neutralBknd"){
     for(int i=0;i<6;i++)
       for(int j=0;j<3;j++){
-        rate[proc][i][j] = neutralBkgndRate[i]/3*neutralBkgndFactor;
-        A[proc][i][j] = 0;
+        double thisA = 0;
+        double thisRate = neutralBkgndRate[i]/3*neutralBkgndFactor;
+        A[proc][i][j] = (rate[proc][i][j]*A[proc][i][j] + thisRate*thisA) / (rate[proc][i][j] + thisRate);
+        rate[proc][i][j] += thisRate;
       }
     return;
   }
