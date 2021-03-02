@@ -154,10 +154,10 @@ void analyzeOne(int ring, int sect){
     cout<<"Asymmetry "<<procNmComb[i]<<"\t"<<asym<<endl;
   }
 
-  cout<<endl<<endl<<"\t\t\toverall\nName\tAsymmetry\tuncert[ppb]\trelative uncer[ppb]\n";
+  cout<<endl<<endl<<"\t\t\toverall\nName\tAsymmetry\tuncert[ppb]\trelative uncer[%]\n";
   for(int i=0;i<nMatrix;i++){
     sigma[i][ring][sect] = sqrt( F(i,i) ) / ( 0.8 * sqrt(beamDays * days2seconds) ) * 1e9;
-    cout<<procNmComb[i]<<"\t"<<A[i][ring][sect]<<"\t"<<sigma[i][ring][sect]<<"\t"<<sigma[i][ring][sect]/A[i][ring][sect]<<endl;
+    cout<<procNmComb[i]<<"\t"<<A[i][ring][sect]<<"\t"<<sigma[i][ring][sect]<<"\t"<<sigma[i][ring][sect]/fabs(A[i][ring][sect])*100.<<endl;
   }
 
   cout<<endl<<"\t\t\tin the selected bin\n";
