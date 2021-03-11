@@ -1,8 +1,8 @@
 // this does 3W region analysis for epInelastic
 // [process][ring][sector]
-const int nMatrix=2;
+const int nMatrix=6;
 const int nProcDef=10;
-const int nProc=2;
+const int nProc=6;
 double A[nProc][6][3],rate[nProc][6][3],sigma[nProc][6][3];
 string procNm[nProcDef]={
   "moller",
@@ -18,7 +18,11 @@ string procNm[nProcDef]={
 };
 string procNmComb[nProc]={
   "moller",
-  "Bknd"
+  "epElastic",
+  "epInelasticW1",
+  "epInelasticW2",
+  "epInelasticW3",
+  "eAlElastic"
 };
 
 int verbose = 0;
@@ -58,18 +62,19 @@ void deconvolution(){
   int addProc(0);
   for(int i=0;i<nProc;i++){
     readSim(fnms[i+addProc],i,addProc);
-    if(i==1)
+    if(i==nProc)
       while(addProc<8){
         addProc++;
         readSim(fnms[i+addProc],i,addProc);
       }
   }
 
-  for(int i=0;i<6;i++)
-    for(int j=0;j<3;j++)
-      analyzeOne(i,j);
+  //for(int i=0;i<6;i++)
+  //  for(int j=0;j<3;j++)
+  //    analyzeOne(i,j);
+  analyzeOne(4,2);
 
-  printAll();
+  //printAll();
 }
 
 void analyzeOne(int ring, int sect){
