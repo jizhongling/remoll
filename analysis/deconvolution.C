@@ -1,8 +1,8 @@
 // this does 3W region analysis for epInelastic
 // [process][ring][sector]
-const int nMatrix=6;
+const int nMatrix=5;
 const int nProcDef=10;
-const int nProc=9;
+const int nProc=5;
 double A[nProcDef][6][3],rate[nProc][6][3];
 string procNm[nProcDef]={
   "moller",
@@ -48,15 +48,15 @@ void deconvolution(){
 		      // "../epInelastic_SegmentedV1_shldAnaV7.root",
 		      // "../epInelastic_SegmentedV1_shldAnaV7.root",
 		      // "../epInelastic_SegmentedV1_shldAnaV7.root",
-		      "histos/moller_up3cm_Segmented_shldAnaV7.root",
-		      "histos/elastic_up3cm_Segmented_shldAnaV7.root",
-		      "histos/inelastic_up3cm_Segmented_shldAnaV7.root",
-		      "histos/inelastic_up3cm_Segmented_shldAnaV7.root",
-		      "histos/inelastic_up3cm_Segmented_shldAnaV7.root",
-		      "histos/elasticAl_up3cm_bkgAnaV4.root",
-		      "histos/quasielasticAl_up3cm_bkgAnaV4.root",
-		      "histos/inelasticAl_up3cm_bkgAnaV4.root",
-		      "histos/pion_up3cm_bkgAnaV4.root",
+		      "histos/moller_shldAnaV7.root",
+		      "histos/elastic_shldAnaV7.root",
+		      "histos/inelastic_shldAnaV7.root",
+		      "histos/inelastic_shldAnaV7.root",
+		      "histos/inelastic_shldAnaV7.root",
+		      "histos/elasticAl_bkgAnaV4.root",
+		      "histos/quasielasticAl_bkgAnaV4.root",
+		      "histos/inelasticAl_bkgAnaV4.root",
+		      "histos/deconv_pi_offSet0_basicAnaV0.root",
 		      "byHand"
   };
 
