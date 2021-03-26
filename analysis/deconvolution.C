@@ -57,6 +57,14 @@ void deconvolution(){
 		      "histos/quasielasticAl_bkgAnaV4.root",
 		      "histos/inelasticAl_bkgAnaV4.root",
 		      "histos/deconv_pi_offSet0_basicAnaV0.root",
+                      //"/phenix/spin/phnxsp01/zji/data/remoll/deconv-sakib/moller/V2U.1a.1sep_V2DSg.9.1sep.root",
+                      //"/phenix/spin/phnxsp01/zji/data/remoll/deconv-sakib/elastic/V2U.1a.1sep_V2DSg.9.1sep.root",
+                      //"/phenix/spin/phnxsp01/zji/data/remoll/deconv-sakib/inelastic/V2U.1a.1sep_V2DSg.9.1sep.root",
+                      //"/phenix/spin/phnxsp01/zji/data/remoll/deconv-sakib/inelastic/V2U.1a.1sep_V2DSg.9.1sep.root",
+                      //"/phenix/spin/phnxsp01/zji/data/remoll/deconv-sakib/inelastic/V2U.1a.1sep_V2DSg.9.1sep.root",
+                      //"/phenix/spin/phnxsp01/zji/data/remoll/deconv-sakib/elasticAl/V2U.1a.1sep_V2DSg.9.1sep.root",
+                      //"/phenix/spin/phnxsp01/zji/data/remoll/deconv-sakib/inelasticAl/V2U.1a.1sep_V2DSg.9.1sep.root",
+                      //"/phenix/spin/phnxsp01/zji/data/remoll/deconv-sakib/pion/V2U.1a.1sep_V2DSg.9.1sep.root",
 		      "byHand"
   };
 
@@ -228,6 +236,7 @@ void readSim(string fnm,int proc, int addBkgnd){
     hName = Form("deconvolution/hRateW%d_eP1",proc-1);
 
   TH1D *hRate=(TH1D*)fin->Get(hName.c_str());
+  //hRate->Scale(1./100.);
 
   const double rateFactor = 65./85;
   double gfFactor = 1;
@@ -248,6 +257,7 @@ void readSim(string fnm,int proc, int addBkgnd){
 	cout<<"\tR/S\t"<<i<<"\t"<<j<<"\t"<<hName<<endl;
 
       TH1D *hA=(TH1D*)fin->Get(hName.c_str());
+      //hA->Scale(1./100.);
       if(proc==8)
 	A[proc][i][j] = -1660;
       else
